@@ -182,9 +182,11 @@ class ProblemTransformer(Transformer[Any, Problem]):
         else:
             name = args[1]
             terms = [
-                Constant(str(_term_name))
-                if self._objects_by_name.get(str(_term_name)) is None
-                else self._objects_by_name.get(str(_term_name))
+                (
+                    Constant(str(_term_name))
+                    if self._objects_by_name.get(str(_term_name)) is None
+                    else self._objects_by_name.get(str(_term_name))
+                )
                 for _term_name in args[2:-1]
             ]
             return Predicate(name, *terms)
@@ -239,6 +241,42 @@ class ProblemParser:
         self._transformer = ProblemTransformer()
         self._parser = Lark(
             _problem_parser_lark, parser="lalr", import_paths=[PARSERS_DIRECTORY]
+        )
+
+    def __call__(self, text: str) -> Problem:
+        """Call."""
+        return call_parser(text, self._parser, self._transformer)
+
+
+class ProblemParser:
+    """PDDL problem parser class."""
+
+    def __init__(self):
+        """Initialize."""
+        self._transformer = ProblemTransformer()
+        self._parser = Lark(
+            _problem_parser_lark, parser="lalr", import_paths=[PARSERS_DIRECTORY]
+        )
+
+    def __call__(self, text: str) -> Problem:
+        """Call."""
+        return call_parser(text, self._parser, self._transformer)
+
+
+class LenientProblemParser:
+    """PDDL problem parser class."""
+
+    def __init__(self):
+        """Initialize."""
+        self._transformer = ProblemTransformer()
+        lark_string = (
+            _problem_parser_lark.replace(
+                "start: problem", "start: (/./|WS)* problem (/./|WS)*"
+            )
+            + "\n%import common.WS\n"
+        )
+        self._parser = Lark(
+            lark_string, parser="lalr", import_paths=[PARSERS_DIRECTORY]
         )
 
     def __call__(self, text: str) -> Problem:
