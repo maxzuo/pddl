@@ -275,7 +275,7 @@ class LenientProblemParser:
                 "start: problem", "start: (/./|WS)* problem (/./|WS)*"
             )
         )
-        print(lark_string)
+
         self._parser = Lark(
             lark_string, parser="lalr", import_paths=[PARSERS_DIRECTORY], maybe_placeholders=False
         )
