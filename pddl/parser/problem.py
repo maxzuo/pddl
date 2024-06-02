@@ -53,6 +53,7 @@ class ProblemTransformer(Transformer[Any, Problem]):
 
     def start(self, args):
         """Process the rule 'start'."""
+        args = [arg for arg in args if isinstance(arg, Problem)]
         return args[0]
 
     def problem(self, args):
@@ -270,13 +271,13 @@ class LenientProblemParser:
         """Initialize."""
         self._transformer = ProblemTransformer()
         lark_string = (
-            _problem_parser_lark.replace(
+            r"WS: /[ \t\f\r\n]/+" + "\n" + _problem_parser_lark.replace(
                 "start: problem", "start: (/./|WS)* problem (/./|WS)*"
             )
-            + "\n%import common.WS\n"
         )
+        print(lark_string)
         self._parser = Lark(
-            lark_string, parser="lalr", import_paths=[PARSERS_DIRECTORY]
+            lark_string, parser="lalr", import_paths=[PARSERS_DIRECTORY], maybe_placeholders=False
         )
 
     def __call__(self, text: str) -> Problem:
